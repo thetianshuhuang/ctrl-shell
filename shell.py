@@ -44,6 +44,7 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
     """
 
     __PROJ_LABEL = '// Project Folders //'
+    __LS_COMMAND = {'posix': ["ls", "-l", "-a"], "nt": ["dir"]}
     __DOC = """
     ___ _       _ ___ _        _ _
    / __| |_ _ _| / __| |_  ___| | |
@@ -127,7 +128,9 @@ Commands
         self.__show(
             "[shell][{cwd}]: {cmd}\n\n{res}".format(
                 cwd=os.getcwd(), cmd=text,
-                res=subprocess.check_output(text.split(" ")).decode("utf-8")))
+                res=subprocess.check_output(
+                    text if os.name == 'nt' else text.split(' '), shell=True)
+                .decode("utf-8")))
 
     def __remove(self, target):
         """Remove folder from project
@@ -234,7 +237,8 @@ Commands
             os.chdir(target)
 
         fpath = os.path.basename(os.getcwd())
-        ret = subprocess.check_output(["ls", "-l", "-a"]).decode("utf-8")
+        ret = subprocess.check_output(
+            self.__LS_COMMAND[os.name], shell=True).decode("utf-8")
 
         # Restore working dir
         if target is not None:
