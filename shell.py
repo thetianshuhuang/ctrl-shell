@@ -22,10 +22,12 @@ Commands
     Show information
 .cmd [aliases: .bash] <command>
     Run command
+.eval <command>
+    Evaluate expression in python
 """
 
-
 import os
+import sys
 import subprocess
 import sublime_plugin
 
@@ -47,7 +49,7 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
    / __| |_ _ _| / __| |_  ___| | |
   | (__|  _| '_| \__ \ ' \/ -_) | |
    \___|\__|_| |_|___/_||_\___|_|_|
-               v0.1 | Tianshu Huang
+               v0.2 | Tianshu Huang
 
 Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
 
@@ -66,6 +68,8 @@ Commands
     Show information
 .cmd [aliases: .bash] <command>
     Run command
+.eval <command>
+    Evaluate expression in python
 """
 
     def run(self):
@@ -98,8 +102,18 @@ Commands
             self.__remove(arg)
         elif base in [".cmd", ".bash"]:
             self.__cmd(arg)
+        elif base in [".eval"]:
+            self.__eval(arg)
         else:
             self.__file_explore(text, previous)
+
+    def __eval(self, arg):
+        """Evaluate python expression"""
+
+        self.__show("[Python {ver}]\n>>> {expr}\n{val}\n".format(
+            ver=sys.version.split(" ")[0],
+            expr=arg,
+            val=eval(arg)))
 
     def __cmd(self, text):
         """Execute shell command
