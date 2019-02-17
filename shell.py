@@ -1,5 +1,29 @@
+"""ctrlshell:
+    ___ _       _ ___ _        _ _
+   / __| |_ _ _| / __| |_  ___| | |
+  | (__|  _| '_| \__ \ ' \/ -_) | |
+   \___|\__|_| |_|___/_||_\___|_|_|
+               v0.1 | Tianshu Huang
+
+Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
+
+Commands
+--------
+<filepath>
+    Change directory and list files or open file and create if not present;
+    emulates emacs' [ctrl+x, ctrl+f] behavior
+.proj [aliases: ...]
+    List current project folders
+.add <filepath>
+    Add folder to current project
+.remove <basename>
+    Remove folder from project folders
+.about [aliases: .help, .info]
+    Show information
+.cmd [aliases: .bash] <command>
+    Run command
 """
-"""
+
 
 import os
 import subprocess
@@ -25,7 +49,7 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
    \___|\__|_| |_|___/_||_\___|_|_|
                v0.1 | Tianshu Huang
 
-Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f} behavior
+Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
 
 Commands
 --------
