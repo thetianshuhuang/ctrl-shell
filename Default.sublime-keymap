@@ -1,0 +1,6 @@
+[
+{ 
+	"keys": ["ctrl+x","ctrl+f"],
+	"command": "ctrlshell"
+}
+]
