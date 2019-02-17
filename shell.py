@@ -44,7 +44,7 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
     """
 
     __PROJ_LABEL = '// Project Folders //'
-    __LS_COMMAND = {'posix': ["ls", "-l", "-a"], "nt": ["dir"]}
+    __LS_COMMAND = {'posix': "ls -l -a", "nt": "dir"}
     __DOC = """
     ___ _       _ ___ _        _ _
    / __| |_ _ _| / __| |_  ___| | |
@@ -128,8 +128,7 @@ Commands
         self.__show(
             "[shell][{cwd}]: {cmd}\n\n{res}".format(
                 cwd=os.getcwd(), cmd=text,
-                res=subprocess.check_output(
-                    text if os.name == 'nt' else text.split(' '), shell=True)
+                res=subprocess.check_output(text, shell=True)
                 .decode("utf-8")))
 
     def __remove(self, target):
