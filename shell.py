@@ -1,9 +1,11 @@
-"""ctrlshell:
+r"""ctrlshell:
     ___ _       _ ___ _        _ _
    / __| |_ _ _| / __| |_  ___| | |
   | (__|  _| '_| \__ \ ' \/ -_) | |
    \___|\__|_| |_|___/_||_\___|_|_|
                v0.1 | Tianshu Huang
+
+Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
 
 Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
 
@@ -24,12 +26,15 @@ Commands
     Run command
 .eval <command>
     Evaluate expression in python
+.wget <url>
+    Get file from URL and load in new
 """
 
 import os
 import sys
 import subprocess
 import sublime_plugin
+import urllib
 
 from .view import get_return
 
@@ -41,6 +46,14 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
     ----------
     __PROJ_LABEL : str
         Label for command output of list project folders (.proj, alias '...')
+    __LS_COMMAND : dict[str]->str
+        Commands to list directory contents for various operating systems
+    __DOC : str
+        Module docstring. Show with .help/.info/.about
+    __LS : str
+        LS template
+    __ERR : str
+        Error template
     """
 
     __PROJ_LABEL = '// Project Folders //'
@@ -71,18 +84,35 @@ Commands
     Run command
 .eval <command>
     Evaluate expression in python
+.wget <url>
+    Get file from URL and load in new view
+"""
+    __LS = """+-{div}-+
+| {fpath} |
++-{div}-+
+[{fullpath}]
+
+{ret}
+"""
+    __ERR = """+-{div1}-+-{div2}-+
+| {base} | {name} |
++-{div1}-+-{div2}-+
+
+{err}
 """
 
     def run(self):
+        """Sublime command runner"""
+
         self.window.show_input_panel(
             ": ", "", self.on_done, None, None)
 
     def on_done(self, text):
+        """Sublime callback for show_input_panel"""
 
         self.window.run_command(
             "viewmanager", {"method": "is_registered_view", "label": ""})
         view_id = get_return("view_id")
-        previous = get_return("label")
 
         # Close current view if current view is a generated view
         if view_id != 0:
@@ -90,27 +120,66 @@ Commands
                 "viewmanager", {"method": "close_view", "label": ""})
 
         sp = text.split(" ")
-        base = sp[0]
-        arg = " ".join(sp[1:])
+        self.__dispatch(sp[0], " ".join(sp[1:]))
 
-        if base in ["...", ".proj"]:
-            self.__show_proj()
-        elif base in [".about", ".info", ".help"]:
-            self.__show(self.__DOC)
-        elif base in [".add"]:
-            self.__add_folder(arg)
-        elif base in [".remove"]:
-            self.__remove(arg)
-        elif base in [".cmd", ".bash"]:
-            self.__cmd(arg)
-        elif base in [".eval"]:
-            self.__eval(arg)
-        else:
-            self.__file_explore(text, previous)
+    def __dispatch(self, base, arg):
+        """Command dispatcher
+
+        Parameters
+        ----------
+        base : str
+            Base command
+        arg : str
+            Command argument
+        """
+        try:
+            if base in ["...", ".proj"]:
+                self.__show_proj()
+            elif base in [".about", ".info", ".help"]:
+                self.__show(self.__DOC)
+            elif base in [".add"]:
+                self.__add_folder(arg)
+            elif base in [".remove"]:
+                self.__remove(arg)
+            elif base in [".cmd", ".bash"]:
+                self.__cmd(arg)
+            elif base in [".eval"]:
+                self.__eval(arg)
+            elif base in [".wget"]:
+                self.__wget(arg)
+            else:
+                self.__file_explore(base + " " + arg, get_return("label"))
+        except Exception as e:
+            name = type(e).__name__
+            self.__show(
+                self.__ERR.format(
+                    err=str(e),
+                    base=base,
+                    div1='-' * len(base),
+                    name=name,
+                    div2='-' * len(name)),
+                label=name)
+
+    def __wget(self, arg):
+        """Get file from web
+
+        Parameters
+        ----------
+        arg : str
+            URL to open; should be prefixed by protocol (http://, etc)
+        """
+        self.__show(
+            urllib.request.urlopen(arg).read().decode('utf-8'),
+            label=arg.rsplit('/', 1)[-1])
 
     def __eval(self, arg):
-        """Evaluate python expression"""
+        """Evaluate python expression
 
+        Parameters
+        ----------
+        arg : str
+            Expression to evaluate -- NOT SANITIZED
+        """
         self.__show("[Python {ver}]\n>>> {expr}\n{val}\n".format(
             ver=sys.version.split(" ")[0],
             expr=arg,
@@ -124,7 +193,6 @@ Commands
         text : str
             Command to run
         """
-
         self.__show(
             "[shell][{cwd}]: {cmd}\n\n{res}".format(
                 cwd=os.getcwd(), cmd=text,
@@ -243,11 +311,11 @@ Commands
         if target is not None:
             os.chdir(current)
 
-        return "{div}\n|   {fpath}   |\n{div}\n[{fullpath}]\n\n{ret}".format(
+        return self.__LS.format(
             ret=ret,
             fullpath=target if target is not None else os.getcwd(),
             fpath=fpath,
-            div='-' * (len(fpath) + 8))
+            div='-' * len(fpath))
 
     def __show_proj(self):
         """Show project folder contents"""
