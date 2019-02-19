@@ -148,7 +148,9 @@ Commands
             elif base in [".wget"]:
                 self.__wget(arg)
             else:
-                self.__file_explore(base + " " + arg, get_return("label"))
+                self.__file_explore(
+                    base + arg if arg is not "" else base,
+                    get_return("label"))
         except Exception as e:
             name = type(e).__name__
             self.__show(
