@@ -113,6 +113,7 @@ Commands
         self.window.run_command(
             "viewmanager", {"method": "is_registered_view", "label": ""})
         view_id = get_return("view_id")
+        previous = get_return("label")
 
         # Close current view if current view is a generated view
         if view_id != 0:
@@ -120,9 +121,9 @@ Commands
                 "viewmanager", {"method": "close_view", "label": ""})
 
         sp = text.split(" ")
-        self.__dispatch(sp[0], " ".join(sp[1:]))
+        self.__dispatch(sp[0], " ".join(sp[1:]), previous)
 
-    def __dispatch(self, base, arg):
+    def __dispatch(self, base, arg, previous):
         """Command dispatcher
 
         Parameters
@@ -149,8 +150,7 @@ Commands
                 self.__wget(arg)
             else:
                 self.__file_explore(
-                    base + arg if arg is not "" else base,
-                    get_return("label"))
+                    base + arg if arg is not "" else base, previous)
         except Exception as e:
             name = type(e).__name__
             self.__show(
@@ -259,6 +259,8 @@ Commands
         """
 
         targetpath = self.__search_proj(target, previous)
+        print("targetpath: " + targetpath)
+        print("previous: " + previous)
         try:
             os.chdir(targetpath)
             self.__show(self.__get_ls())
