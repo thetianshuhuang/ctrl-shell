@@ -28,6 +28,8 @@ Commands
     Evaluate expression in python
 .wget <url>
     Get file from URL and load in new
+.close
+    Close current project
 """
 
 import os
@@ -63,7 +65,7 @@ class ctrlshellCommand(sublime_plugin.WindowCommand):
    / __| |_ _ _| / __| |_  ___| | |
   | (__|  _| '_| \__ \ ' \/ -_) | |
    \___|\__|_| |_|___/_||_\___|_|_|
-               v0.2 | Tianshu Huang
+               v1.0 | Tianshu Huang
 
 Sublime utility shell inspired by emacs' [ctrl+x, ctrl+f] behavior
 
@@ -86,6 +88,8 @@ Commands
     Evaluate expression in python
 .wget <url>
     Get file from URL and load in new view
+.close
+    Close current project
 """
     __LS = """+-{div}-+
 | {fpath} |
@@ -148,6 +152,8 @@ Commands
                 self.__eval(arg)
             elif base in [".wget"]:
                 self.__wget(arg)
+            elif base in [".close"]:
+                self.window.run_command("close_project")
             else:
                 self.__file_explore(
                     base + arg if arg is not "" else base, previous)
@@ -259,8 +265,6 @@ Commands
         """
 
         targetpath = self.__search_proj(target, previous)
-        print("targetpath: " + targetpath)
-        print("previous: " + previous)
         try:
             os.chdir(targetpath)
             self.__show(self.__get_ls())

@@ -14,3 +14,6 @@ Several special commands are available:
 - ```.remove <basename>```: Remove folder from project folders
 - ```.about```, ```.help```, ```.info```: Show information
 - ```.cmd <command>```, ```.bash <command>```: Run command
+- ```.eval <command>```: Evaluate expression in python
+- ```.wget <url>```: Download file at ```<url>``` (does not use wget -- is compatible with Windows)
+- ```.close```: Close current project (remove all folders)
